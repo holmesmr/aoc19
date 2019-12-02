@@ -29,10 +29,7 @@ fn part1(input: &str) {
     let mut cpu = IntcodeCPU::new(program);
     cpu.run().expect("Should not have excepted at runtime");
 
-    println!(
-        "Value at position 0: {}",
-        cpu.output()
-    );
+    println!("Value at position 0: {}", cpu.output());
 }
 
 const PART2_NOUN_MIN: u32 = 0;
@@ -56,12 +53,17 @@ fn part2(input: &str) {
             let res = cpu.run();
 
             if let Err(ex) = res {
-                eprintln!("WARNING: CPU exception while running with inputs (noun = {}, verb = {}). Skipping", noun, verb);
+                eprintln!("WARNING: CPU exception {:?} at position {} while running with inputs (noun = {}, verb = {}). Skipping", ex, cpu.pc(), noun, verb);
                 continue;
             }
 
             if cpu.output() == PART2_TARGET_OUTPUT {
-                println!("Solution found (noun = {}, verb = {}). Answer is {}", noun, verb, (100 * noun + verb));
+                println!(
+                    "Solution found (noun = {}, verb = {}). Answer is {}",
+                    noun,
+                    verb,
+                    (100 * noun + verb)
+                );
                 return;
             }
         }
