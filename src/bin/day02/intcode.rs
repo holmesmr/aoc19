@@ -45,14 +45,14 @@ impl CPUException {
         CPUException { kind, message }
     }
 
-    pub fn oob(ident: &str, pos: usize) -> Self {
+    pub fn out_of_bounds(ident: &str, pos: usize) -> Self {
         CPUException {
             kind: CPUExceptionKind::OutOfBounds,
             message: format!("{}: pos {} is outside program bounds", ident, pos),
         }
     }
 
-    pub fn invalop(opcode: u32) -> Self {
+    pub fn invalid_opcode(opcode: u32) -> Self {
         CPUException {
             kind: CPUExceptionKind::InvalidOpcode,
             message: format!("Invalid opcode {}", opcode),
@@ -85,34 +85,34 @@ impl IntcodeCPU {
                 let src1_val = *self
                     .program
                     .get(src1)
-                    .ok_or_else(|| CPUException::oob("EXEC!ADD.src1", src1))?;
+                    .ok_or_else(|| CPUException::out_of_bounds("EXEC!ADD.src1", src1))?;
                 let src2_val = *self
                     .program
                     .get(src2)
-                    .ok_or_else(|| CPUException::oob("EXEC!ADD.src2", src2))?;
+                    .ok_or_else(|| CPUException::out_of_bounds("EXEC!ADD.src2", src2))?;
                 let dst_cell = self
                     .program
                     .get_mut(dst)
-                    .ok_or_else(|| CPUException::oob("EXEC!ADD.dst", dst))?;
+                    .ok_or_else(|| CPUException::out_of_bounds("EXEC!ADD.dst", dst))?;
                 *dst_cell = src1_val + src2_val;
             }
             CPUOp::Mul { src1, src2, dst } => {
                 let src1_val = *self
                     .program
                     .get(src1)
-                    .ok_or_else(|| CPUException::oob("EXEC!MUL.src1", src1))?;
+                    .ok_or_else(|| CPUException::out_of_bounds("EXEC!MUL.src1", src1))?;
                 let src2_val = *self
                     .program
                     .get(src2)
-                    .ok_or_else(|| CPUException::oob("EXEC!MUL.src2", src2))?;
+                    .ok_or_else(|| CPUException::out_of_bounds("EXEC!MUL.src2", src2))?;
                 let dst_cell = self
                     .program
                     .get_mut(dst)
-                    .ok_or_else(|| CPUException::oob("EXEC!MUL.dst", dst))?;
+                    .ok_or_else(|| CPUException::out_of_bounds("EXEC!MUL.dst", dst))?;
                 *dst_cell = src1_val * src2_val;
             }
             CPUOp::Halt => self.state = CPUState::Halted,
-            CPUOp::Undefined(opcode) => return Err(CPUException::invalop(opcode)),
+            CPUOp::Undefined(opcode) => return Err(CPUException::invalid_opcode(opcode)),
         }
 
         self.pc += op.next_pc_offset();
@@ -125,24 +125,24 @@ impl IntcodeCPU {
         let opcode = self
             .program
             .get(self.pc)
-            .ok_or_else(|| CPUException::oob("FETCH!OP", self.pc))?;
+            .ok_or_else(|| CPUException::out_of_bounds("FETCH!OP", self.pc))?;
 
         match opcode {
             1 => {
                 let src1 = *self
                     .program
                     .get(self.pc + 1)
-                    .ok_or_else(|| CPUException::oob("FETCH!ADD.src1", self.pc + 1))?
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!ADD.src1", self.pc + 1))?
                     as usize;
                 let src2 = *self
                     .program
                     .get(self.pc + 2)
-                    .ok_or_else(|| CPUException::oob("FETCH!ADD.src2", self.pc + 2))?
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!ADD.src2", self.pc + 2))?
                     as usize;
                 let dst = *self
                     .program
                     .get(self.pc + 3)
-                    .ok_or_else(|| CPUException::oob("FETCH!ADD.dst", self.pc + 3))?
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!ADD.dst", self.pc + 3))?
                     as usize;
 
                 Ok(CPUOp::Add { src1, src2, dst })
@@ -151,17 +151,17 @@ impl IntcodeCPU {
                 let src1 = *self
                     .program
                     .get(self.pc + 1)
-                    .ok_or_else(|| CPUException::oob("FETCH!MUL.src1", self.pc + 1))?
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!MUL.src1", self.pc + 1))?
                     as usize;
                 let src2 = *self
                     .program
                     .get(self.pc + 2)
-                    .ok_or_else(|| CPUException::oob("FETCH!MUL.src2", self.pc + 2))?
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!MUL.src2", self.pc + 2))?
                     as usize;
                 let dst = *self
                     .program
                     .get(self.pc + 3)
-                    .ok_or_else(|| CPUException::oob("FETCH!MUL.dst", self.pc + 3))?
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!MUL.dst", self.pc + 3))?
                     as usize;
 
                 Ok(CPUOp::Mul { src1, src2, dst })
