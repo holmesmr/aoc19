@@ -53,7 +53,10 @@ enum CPUOp {
 impl CPUOp {
     fn next_pc_offset(&self) -> usize {
         match *self {
-            CPUOp::Add { .. } | CPUOp::Mul { .. } | CPUOp::CompareEqual { .. } | CPUOp::CompareLess { .. } => 4,
+            CPUOp::Add { .. }
+            | CPUOp::Mul { .. }
+            | CPUOp::CompareEqual { .. }
+            | CPUOp::CompareLess { .. } => 4,
             CPUOp::JumpZero { .. } | CPUOp::JumpNonZero { .. } => 3,
             CPUOp::Input(_) | CPUOp::Output(_) => 2,
             CPUOp::Halt | CPUOp::Undefined { .. } => 0,
@@ -332,7 +335,7 @@ impl IntcodeCPU {
 
                 Ok(CPUOp::JumpNonZero {
                     cmp: Operand::new(operand_modes[0], cmp)?,
-                    to: Operand::new(operand_modes[1], to)?
+                    to: Operand::new(operand_modes[1], to)?,
                 })
             }
             "06" => {
@@ -347,7 +350,7 @@ impl IntcodeCPU {
 
                 Ok(CPUOp::JumpZero {
                     cmp: Operand::new(operand_modes[0], cmp)?,
-                    to: Operand::new(operand_modes[1], to)?
+                    to: Operand::new(operand_modes[1], to)?,
                 })
             }
             "07" => {
@@ -362,7 +365,8 @@ impl IntcodeCPU {
                 let dst = *self
                     .program
                     .get(self.pc + 3)
-                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!LT.dst", self.pc + 3))? as usize;
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!LT.dst", self.pc + 3))?
+                    as usize;
 
                 Ok(CPUOp::CompareLess {
                     cmp1: Operand::new(operand_modes[0], cmp1)?,
@@ -382,7 +386,8 @@ impl IntcodeCPU {
                 let dst = *self
                     .program
                     .get(self.pc + 3)
-                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!EQ.dst", self.pc + 3))? as usize;
+                    .ok_or_else(|| CPUException::out_of_bounds("FETCH!EQ.dst", self.pc + 3))?
+                    as usize;
 
                 Ok(CPUOp::CompareEqual {
                     cmp1: Operand::new(operand_modes[0], cmp1)?,
@@ -391,9 +396,7 @@ impl IntcodeCPU {
                 })
             }
             "99" => Ok(CPUOp::Halt),
-            undef_op => Ok(CPUOp::Undefined(
-                i32::from_str(undef_op).unwrap(),
-            )),
+            undef_op => Ok(CPUOp::Undefined(i32::from_str(undef_op).unwrap())),
         }
     }
 
